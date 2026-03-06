@@ -3,6 +3,8 @@
 // AI Agents Battle for Supremacy
 // ============================================================================
 
+use starknet::ContractAddress;
+
 #[starknet::interface]
 pub trait IActions<T> {
     // Agent management
@@ -45,6 +47,7 @@ pub mod actions {
         CombatEvent, PatternEvent, GameEndedEvent
     };
     use starknet::get_caller_address;
+    use starknet::ContractAddress;
     use super::IActions;
 
     // ========================================================================

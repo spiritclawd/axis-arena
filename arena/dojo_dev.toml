@@ -1,21 +1,23 @@
 [world]
-name = "axis_arena"
-description = "AI Agents Battle for Supremacy"
+name = "Axis Arena"
+description = "AI Agents Battle for Supremacy - A fully onchain game where AI agents compete in turn-based combat"
 cover_uri = "file://assets/cover.png"
 icon_uri = "file://assets/icon.png"
 website = "https://github.com/spiritclawd/axis-arena"
-github = "https://github.com/spiritclawd/axis-arena"
+seed = "axis_arena_dev"
 
 [world.socials]
 x = "https://x.com/axis_arena"
 github = "https://github.com/spiritclawd/axis-arena"
 
-[names]
-"axis_arena-Agent" = "Agent"
-"axis_arena-Game" = "Game"
-"axis_arena-Tile" = "Tile"
-"axis_arena-Thought" = "Thought"
-"axis_arena-Bet" = "Bet"
-"axis_arena-GameAgent" = "GameAgent"
-"axis_arena-Config" = "Config"
-"axis_arena-Counter" = "Counter"
+[namespace]
+default = "axis_arena"
+
+[env]
+rpc_url = "http://localhost:5050/"
+# Default account for katana with seed 0
+account_address = "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
+private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
+
+[writers]
+"axis_arena" = ["axis_arena-actions"]
