@@ -147,6 +147,10 @@ pub mod actions {
         ) {
             let mut world = self.world_default();
             let config: Config = world.read_model(CONFIG_ID);
+            let game: Game = world.read_model(game_id);
+            
+            // Validate game is active
+            assert(game.status == 1_u8, 'Game not active');
             
             let mut agent: Agent = world.read_model(agent_id);
             assert(agent.alive, 'Agent is dead');
@@ -176,7 +180,10 @@ pub mod actions {
         ) {
             let mut world = self.world_default();
             let config: Config = world.read_model(CONFIG_ID);
-            let game: Game = world.read_model(game_id);
+            let mut game: Game = world.read_model(game_id);
+            
+            // Validate game is active
+            assert(game.status == 1_u8, 'Game not active');
             
             let mut attacker: Agent = world.read_model(attacker_id);
             let mut target: Agent = world.read_model(target_id);
@@ -203,6 +210,8 @@ pub mod actions {
                 target.energy = 0_u32;
                 attacker.kills = attacker.kills + 1_u32;
                 attacker.score = attacker.score + config.kill_reward;
+                // EGS: Track total kills for game score
+                game.total_kills = game.total_kills + 1_u32;
                 true
             } else {
                 target.energy = target.energy - damage;
@@ -214,6 +223,7 @@ pub mod actions {
             
             world.write_model(@attacker);
             world.write_model(@target);
+            world.write_model(@game);
             
             // Emit combat event
             world.emit_event(@CombatEvent {
@@ -241,6 +251,9 @@ pub mod actions {
             let mut world = self.world_default();
             let config: Config = world.read_model(CONFIG_ID);
             let game: Game = world.read_model(game_id);
+            
+            // Validate game is active
+            assert(game.status == 1_u8, 'Game not active');
             
             let mut agent: Agent = world.read_model(agent_id);
             assert(agent.alive, 'Agent is dead');
@@ -286,6 +299,10 @@ pub mod actions {
         ) {
             let mut world = self.world_default();
             let config: Config = world.read_model(CONFIG_ID);
+            let mut game: Game = world.read_model(game_id);
+            
+            // Validate game is active
+            assert(game.status == 1_u8, 'Game not active');
             
             let mut agent: Agent = world.read_model(agent_id);
             assert(agent.alive, 'Agent is dead');
@@ -301,6 +318,8 @@ pub mod actions {
             if tile.owner_agent_id != agent_id {
                 agent.territories = agent.territories + 1_u32;
                 agent.score = agent.score + config.capture_reward;
+                // EGS: Track total territories for game score
+                game.total_territories = game.total_territories + 1_u32;
             }
             
             tile.owner_agent_id = agent_id;
@@ -308,6 +327,7 @@ pub mod actions {
             
             world.write_model(@tile);
             world.write_model(@agent);
+            world.write_model(@game);
         }
 
         // -------------------------------------------------------------------
@@ -323,7 +343,10 @@ pub mod actions {
         ) {
             let mut world = self.world_default();
             let config: Config = world.read_model(CONFIG_ID);
-            let game: Game = world.read_model(game_id);
+            let mut game: Game = world.read_model(game_id);
+            
+            // Validate game is active
+            assert(game.status == 1_u8, 'Game not active');
             
             let mut agent: Agent = world.read_model(agent_id);
             assert(agent.alive, 'Agent is dead');
@@ -336,6 +359,8 @@ pub mod actions {
                 tile.discovered = true;
                 agent.patterns_found = agent.patterns_found + 1_u32;
                 agent.score = agent.score + config.pattern_reward;
+                // EGS: Track total patterns for game score
+                game.total_patterns = game.total_patterns + 1_u32;
                 
                 world.emit_event(@PatternEvent {
                     game_id: game_id,
@@ -350,6 +375,7 @@ pub mod actions {
             
             world.write_model(@tile);
             world.write_model(@agent);
+            world.write_model(@game);
         }
 
         // -------------------------------------------------------------------
@@ -362,6 +388,7 @@ pub mod actions {
             prize_pool: u256,
         ) {
             let mut world = self.world_default();
+            let owner = get_caller_address();
             
             let mut counter: Counter = world.read_model(GAME_ID_KEY);
             let game_id = counter.value + 1_u32;
@@ -376,6 +403,13 @@ pub mod actions {
                 winner_id: 0_u32,
                 prize_pool: prize_pool,
                 difficulty: 1_u8,
+
+                // EGS fields for $5K track
+                final_score: 0_u256,
+                player_address: owner,
+                total_kills: 0_u32,
+                total_patterns: 0_u32,
+                total_territories: 0_u32,
             };
             
             world.write_model(@game);
@@ -453,10 +487,27 @@ pub mod actions {
         ) {
             let mut world = self.world_default();
             let mut game: Game = world.read_model(game_id);
-            game.status = 2_u8;
             
-            // Winner determined by highest score (would query all agents)
-            // This is simplified - in production would iterate GameAgents
+            // Validate game is active before ending
+            assert(game.status == 1_u8, 'Game not active');
+            
+            game.status = 2_u8; // ended
+            
+            // EGS: Calculate final score
+            // Score = kills*100 + patterns*50 + territories*15
+            // Speed bonus: +2% per turn saved
+            let action_score = (game.total_kills * 100_u32)
+                + (game.total_patterns * 50_u32)
+                + (game.total_territories * 15_u32);
+            
+            let speed_bonus = if game.max_turns > game.current_turn {
+                let turns_saved = game.max_turns - game.current_turn;
+                (action_score * turns_saved * 2_u32) / 100_u32
+            } else {
+                0_u32
+            };
+            
+            game.final_score = (action_score + speed_bonus).into();
             
             world.write_model(@game);
             
@@ -481,6 +532,11 @@ pub mod actions {
             let mut world = self.world_default();
             let bettor = get_caller_address();
             
+            let mut game: Game = world.read_model(game_id);
+            
+            // Can only bet on games that haven't ended
+            assert(game.status != 2_u8, 'Game already ended');
+            
             let bet = Bet {
                 game_id: game_id,
                 bettor: bettor,
@@ -489,7 +545,6 @@ pub mod actions {
                 claimed: false,
             };
             
-            let mut game: Game = world.read_model(game_id);
             game.prize_pool = game.prize_pool + amount;
             
             world.write_model(@bet);

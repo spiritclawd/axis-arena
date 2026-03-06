@@ -17,6 +17,10 @@ think = "sozo execute axis_arena-actions think --wait"
 dojo = { git = "https://github.com/dojoengine/dojo.git", tag = "sozo/v1.8.6" }
 starknet = "2.13.1"
 
+# EGS (Embeddable Game Standard) - implementing interface directly
+# to avoid heavy dependency chain. Full EGS compatibility achieved
+# via IMinigameTokenData trait implementation in arena_token.cairo
+
 [[target.starknet-contract]]
 build-external-contracts = ["dojo::world::world_contract::world"]
 

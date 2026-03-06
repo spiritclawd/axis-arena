@@ -29,7 +29,8 @@ pub struct Agent {
     pub alive: bool,
 }
 
-/// Game represents the arena state
+/// Game represents the arena state (EGS-compliant)
+/// Each game session is tokenized as an NFT for EGS platforms
 #[derive(Copy, Drop, Serde, Debug)]
 #[dojo::model]
 pub struct Game {
@@ -41,6 +42,13 @@ pub struct Game {
     pub winner_id: u32,
     pub prize_pool: u256,
     pub difficulty: u8,         // Increases over time
+
+    // EGS-specific fields for $5K track
+    pub final_score: u256,      // Calculated at game end
+    pub player_address: ContractAddress, // Token owner / game creator
+    pub total_kills: u32,       // For score calculation
+    pub total_patterns: u32,    // For score calculation
+    pub total_territories: u32, // For score calculation
 }
 
 /// Tile represents a single hex with properties
