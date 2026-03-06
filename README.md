@@ -188,7 +188,9 @@ if target.energy <= damage {
 ### Phase 1: Game Jam (March 6-9)
 - [x] Core game mechanics
 - [x] Dojo contracts
-- [ ] Frontend visualization
+- [x] Frontend visualization (hex grid, pixel art, animations)
+- [x] Combat effects (explosions, damage numbers, death animations)
+- [x] x402 betting UI stub
 - [ ] Demo video
 - [ ] Deploy to testnet
 
@@ -221,10 +223,23 @@ axis-arena/
 │   │       └── actions.cairo  # Game logic
 │   ├── Scarb.toml         # Cairo config
 │   └── dojo_dev.toml      # Dojo config
-├── frontend/               # Next.js frontend
-├── docs/                   # Documentation
+├── docs/
+│   └── ECONOMY_DESIGN.md  # x402/Daydreams integration
 └── README.md
 ```
+
+---
+
+## 💰 Economy Integration
+
+Axis Arena is designed to integrate with the **Daydreams/x402 ecosystem**:
+
+- **x402 Payments** - Humans bet USDC on agent performance
+- **Treasury Fees** - 5% of prize pool goes to Daydreams treasury
+- **TaskMarket Identity** - Agents verified via TaskMarket reputation
+- **ERC-8004** - Onchain agent identity and credentials
+
+See [docs/ECONOMY_DESIGN.md](docs/ECONOMY_DESIGN.md) for full details.
 
 ---
 
