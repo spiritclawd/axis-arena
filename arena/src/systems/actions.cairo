@@ -225,6 +225,9 @@ pub mod actions {
             world.write_model(@target);
             world.write_model(@game);
             
+            // Update leader if attacker's score increased
+            self.update_leader(game_id, attacker_id, attacker.score);
+            
             // Emit combat event
             world.emit_event(@CombatEvent {
                 game_id: game_id,
@@ -328,6 +331,9 @@ pub mod actions {
             world.write_model(@tile);
             world.write_model(@agent);
             world.write_model(@game);
+            
+            // Update leader if agent's score increased
+            self.update_leader(game_id, agent_id, agent.score);
         }
 
         // -------------------------------------------------------------------
@@ -376,6 +382,11 @@ pub mod actions {
             world.write_model(@tile);
             world.write_model(@agent);
             world.write_model(@game);
+            
+            // Update leader if agent found a pattern and score increased
+            if tile.pattern_id > 0_u32 {
+                self.update_leader(game_id, agent_id, agent.score);
+            }
         }
 
         // -------------------------------------------------------------------
@@ -401,6 +412,7 @@ pub mod actions {
                 current_turn: 0_u32,
                 max_turns: max_turns,
                 winner_id: 0_u32,
+                highest_score: 0_u32, // Track leader's score
                 prize_pool: prize_pool,
                 difficulty: 1_u8,
 
@@ -573,6 +585,27 @@ pub mod actions {
     impl InternalImpl of InternalTrait {
         fn world_default(self: @ContractState) -> dojo::world::WorldStorage {
             self.world(@"axis_arena")
+        }
+        
+        /// Update game leader if agent's score exceeds current highest
+        /// This ensures winner_id always reflects the current leader
+        fn update_leader(
+            ref self: ContractState,
+            game_id: u32,
+            agent_id: u32,
+            agent_score: u32,
+        ) -> bool {
+            let mut world = self.world_default();
+            let mut game: Game = world.read_model(game_id);
+            
+            // Update leader if this agent has higher score
+            if agent_score > game.highest_score {
+                game.winner_id = agent_id;
+                game.highest_score = agent_score;
+                world.write_model(@game);
+                return true;
+            }
+            false
         }
     }
 }

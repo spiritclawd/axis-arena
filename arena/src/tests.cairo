@@ -5,8 +5,6 @@
 
 #[cfg(test)]
 mod tests {
-    use axis_arena::models::Game;
-
     // ========================================================================
     // Score Calculation Tests
     // ========================================================================
@@ -172,5 +170,74 @@ mod tests {
         assert(action_score == 1700_u32, 'action wrong');
         assert(speed_bonus == 680_u32, 'bonus wrong');
         assert(final_score == 2380_u32, 'final wrong');
+    }
+
+    // ========================================================================
+    // Winner Tracking Tests
+    // ========================================================================
+
+    #[test]
+    fn test_leader_update_logic() {
+        // Simulate leader tracking
+        let mut winner_id: u32 = 0;
+        let mut highest_score: u32 = 0;
+
+        // Agent 1 scores 100
+        let agent1_score: u32 = 100;
+        if agent1_score > highest_score {
+            winner_id = 1_u32;
+            highest_score = agent1_score;
+        }
+        assert(winner_id == 1_u32, 'agent1 should lead');
+        assert(highest_score == 100_u32, 'score wrong');
+
+        // Agent 2 scores 50 (should NOT become leader)
+        let agent2_score: u32 = 50;
+        if agent2_score > highest_score {
+            winner_id = 2_u32;
+            highest_score = agent2_score;
+        }
+        assert(winner_id == 1_u32, 'agent1 still leads');
+        assert(highest_score == 100_u32, 'score unchanged');
+
+        // Agent 3 scores 200 (should become leader)
+        let agent3_score: u32 = 200;
+        if agent3_score > highest_score {
+            winner_id = 3_u32;
+            highest_score = agent3_score;
+        }
+        assert(winner_id == 3_u32, 'agent3 now leads');
+        assert(highest_score == 200_u32, 'score updated');
+    }
+
+    #[test]
+    fn test_multiple_score_updates() {
+        // Simulate a game with multiple score changes
+        let mut winner_id: u32 = 0;
+        let mut highest_score: u32 = 0;
+
+        // Turn 1: Agent 1 gets a kill (100 points)
+        let agent1_score = 100_u32;
+        if agent1_score > highest_score {
+            winner_id = 1_u32;
+            highest_score = agent1_score;
+        }
+
+        // Turn 2: Agent 2 captures territory (15 points) - not enough
+        let agent2_score = 15_u32;
+        if agent2_score > highest_score {
+            winner_id = 2_u32;
+            highest_score = agent2_score;
+        }
+        assert(winner_id == 1_u32, 'agent1 still leads');
+
+        // Turn 5: Agent 2 finds pattern (50 points) + territories (45) = 110 total
+        let agent2_total = 15_u32 + 50_u32 + 45_u32;
+        if agent2_total > highest_score {
+            winner_id = 2_u32;
+            highest_score = agent2_total;
+        }
+        assert(winner_id == 2_u32, 'agent2 now leads');
+        assert(highest_score == 110_u32, 'score correct');
     }
 }

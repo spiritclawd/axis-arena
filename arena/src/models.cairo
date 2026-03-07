@@ -39,7 +39,8 @@ pub struct Game {
     pub status: u8,             // 0=waiting, 1=active, 2=ended
     pub current_turn: u32,
     pub max_turns: u32,
-    pub winner_id: u32,
+    pub winner_id: u32,         // Current leader / final winner
+    pub highest_score: u32,     // Track leader's score for comparison
     pub prize_pool: u256,
     pub difficulty: u8,         // Increases over time
 
