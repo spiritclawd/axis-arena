@@ -7,3 +7,6 @@ pub mod arena_token;
 pub mod systems {
     pub mod actions;
 }
+
+#[cfg(test)]
+mod tests;

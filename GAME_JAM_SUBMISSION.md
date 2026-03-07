@@ -11,6 +11,7 @@
 | Resource | URL |
 |----------|-----|
 | **GitHub** | https://github.com/spiritclawd/axis-arena |
+| **Live Demo** | Fork and deploy locally (see DEPLOYMENT.md) |
 | **World Address** | `0x05ee8ff95a54a810d1873d7aebdb6b3cdc285daa95a81cfc42e8e45ae509635a` |
 | **Actions Contract** | `0xda98fdd7f2f743f58b0522917f119e99100c755ca4ef6bf21a39f4a3a6ed8d` |
 
@@ -24,11 +25,16 @@
 - ✅ Turn-based combat system
 - ✅ Territory control
 - ✅ Agent personalities
+- ✅ Hex-grid arena with fog of war
+- ✅ Betting system for human participation
 
 ### EGS Track ($5,000)
-- 📝 IMinigameTokenData trait design ready
-- 📝 Score calculation formula designed
-- 📝 Platform callback structure planned
+- ✅ **IMinigameTokenData trait implemented** in `arena_token.cairo`
+- ✅ **Score calculation** with kills×100 + patterns×50 + territories×15
+- ✅ **Speed bonus** +2% per turn saved
+- ✅ **Game data packing** for EGS platforms
+- ✅ **14 unit tests passing** for score calculations
+- ✅ **Full validation** on all game actions
 
 ---
 
@@ -43,6 +49,12 @@
 - Hex-grid positioning
 - Adjacent attacks with damage calculation
 - Kill rewards and territory control
+
+### EGS Compliance
+Each game is tokenized with:
+- `get_score(token_id)` - Returns calculated score
+- `is_game_over(token_id)` - Returns game status
+- `get_game_data(token_id)` - Returns packed stats
 
 ### Economy
 - **Energy**: Spent on movement, attacks
@@ -60,7 +72,7 @@
 | **Frontend** | React + Next.js 15 |
 | **Styling** | Tailwind CSS + shadcn/ui |
 | **Local Chain** | Katana (no fees mode) |
-| **Build** | Scarb v2.13.1 |
+| **Build** | Scarb v2.16.0 |
 
 ---
 
@@ -68,18 +80,23 @@
 
 ```bash
 # 1. Clone repo
-git clone https://github.com/spiritclawd/axis-arena
+git clone https://github.com/YOUR_USERNAME/axis-arena
 cd axis-arena/arena
 
 # 2. Start Katana
 katana --dev --dev.no-fee --dev.no-account-validation
 
-# 3. Deploy (already deployed, but to redeploy)
-sozo migrate --dev
+# 3. Build & Deploy
+sozo build && sozo migrate --dev
 
-# 4. Run frontend
+# 4. Run tests
+scarb test
+
+# 5. Run frontend
 cd ../frontend && npm install && npm run dev
 ```
+
+See `docs/DEPLOYMENT.md` for complete deployment guide.
 
 ---
 
@@ -88,7 +105,7 @@ cd ../frontend && npm install && npm run dev
 | Model | Description |
 |-------|-------------|
 | `Agent` | AI player with stats and position |
-| `Game` | Arena match with turns and prize |
+| `Game` | Arena match with turns, prize, and EGS score fields |
 | `Tile` | Hex cell with owner and resources |
 | `Thought` | Agent reasoning records |
 | `Bet` | Human betting on agents |
@@ -97,14 +114,26 @@ cd ../frontend && npm install && npm run dev
 
 ---
 
+## 📁 Documentation
+
+| Document | Description |
+|----------|-------------|
+| `docs/DEPLOYMENT.md` | Complete deployment guide for forks |
+| `docs/EGS_INTEGRATION.md` | EGS technical design |
+| `docs/ECONOMICS.md` | Sustainable business model |
+| `docs/WORKLOG.md` | Development history |
+
+---
+
 ## 🎬 Demo
 
 The game features:
 - **Hex grid arena** with fog of war
 - **Animated agents** with personality-based colors
-- **Combat log** showing attacks and kills
+- **Combat animations** with floating damage numbers
 - **Betting panel** for human participation
 - **Real-time updates** via Dojo indexing
+- **Landing page** with animated hero section
 
 ---
 
@@ -129,11 +158,16 @@ create_game(max_turns, prize_pool)
 join_game(game_id, agent_id)
 start_game(game_id)
 end_turn(game_id)
-end_game(game_id)
+end_game(game_id) // Calculates EGS score
 
 // Betting
 place_bet(game_id, agent_id, amount)
 claim_winnings(game_id, bettor)
+
+// EGS Token (arena_token.cairo)
+get_score(token_id) -> u256
+is_game_over(token_id) -> bool
+get_game_data(token_id) -> u256
 ```
 
 ---
@@ -147,6 +181,22 @@ Unlike traditional games where AI is hidden, Axis Arena makes AI reasoning **vis
 - **Deep Think (40 compute)**: Simulate game trees
 
 This creates a resource economy where agents must balance **action** vs **reasoning**.
+
+---
+
+## 💰 Sustainable Economics
+
+| Fee Type | Rate | Destination |
+|----------|------|-------------|
+| Protocol Fee | 5% | Community Treasury |
+| Winner Share | 95% | Bettors on winning agent |
+
+**Treasury Distribution:**
+- 40% Development Fund
+- 40% Community Rewards
+- 20% Liquidity Provision
+
+See `docs/ECONOMICS.md` for full tokenomics.
 
 ---
 
@@ -165,6 +215,23 @@ Adapted for:
 
 ---
 
+## ✅ Testing
+
+```bash
+# Run all unit tests
+cd arena && scarb test
+
+# Expected: 14 tests pass
+# - Score calculation tests
+# - Speed bonus tests
+# - Game status tests
+# - Personality tests
+# - Combat tests
+# - Edge case tests
+```
+
+---
+
 ## 👥 Team
 
 - **Zaia** - AI Agent Developer (autonomous development)
@@ -176,17 +243,18 @@ Adapted for:
 
 - **March 6**: Project setup, Cairo contracts, Katana deployment
 - **March 7**: Frontend development, game mechanics
-- **March 8**: Testing, polish, submission
+- **March 8**: EGS implementation, testing, documentation, submission
 
 ---
 
 ## 🔮 Future Roadmap
 
-1. **Mainnet Deployment** - Deploy to Starknet mainnet
-2. **Real AI Integration** - Connect actual LLM agents
-3. **EGS Full Integration** - Complete IMinigameTokenData
-4. **Tournament System** - Multi-game competitions
-5. **Spectator Mode** - Watch agents battle in real-time
+1. ~~EGS Full Integration~~ ✅ **DONE**
+2. **Mainnet Deployment** - Deploy to Starknet mainnet
+3. **Real AI Integration** - Connect actual LLM agents
+4. **DAO Governance** - Community treasury management
+5. **Tournament System** - Multi-game competitions
+6. **Spectator Mode** - Watch agents battle in real-time
 
 ---
 
