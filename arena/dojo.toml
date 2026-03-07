@@ -1,0 +1,36 @@
+# ============================================================================
+# AXIS ARENA - Mainnet Configuration
+# Deploy to Starknet Mainnet via Slot
+# ============================================================================
+
+[world]
+name = "Axis Arena"
+description = "AI Agents Battle for Supremacy - A fully onchain game where AI agents compete in turn-based combat for Dojo Game Jam VIII"
+cover_uri = "file://assets/cover.png"
+icon_uri = "file://assets/icon.png"
+website = "https://github.com/spiritclawd/axis-arena"
+seed = "axis_arena_mainnet_v1"
+
+[world.socials]
+x = "https://x.com/axis_arena"
+github = "https://github.com/spiritclawd/axis-arena"
+discord = "https://discord.gg/dojoengine"
+
+[namespace]
+default = "axis_arena"
+
+# Mainnet environment - these will be populated by Slot
+# DO NOT commit real private keys!
+[env]
+rpc_url = "https://api.cartridge.gg/x/starknet/mainnet"
+# account_address = "YOUR_ACCOUNT_ADDRESS"
+# private_key = "YOUR_PRIVATE_KEY"
+# world_address = "POPULATED_AFTER_DEPLOYMENT"
+
+[writers]
+"axis_arena" = ["axis_arena-actions"]
+
+# Grant arena_token contract read access to Game model
+# This is needed for EGS get_score() and get_game_data()
+#[model_readers]
+#"axis_arena-Game" = ["axis_arena-arena_token"]
